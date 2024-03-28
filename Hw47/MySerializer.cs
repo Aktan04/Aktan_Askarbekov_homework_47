@@ -5,11 +5,11 @@ namespace Hw47;
 
 public class MySerializer<T>
 {
-    private T obj;
+    private T _obj;
 
     public MySerializer(T obj)
     {
-        this.obj = obj;
+        _obj = obj;
     }
 
     public string SerializeObject(T obj)
@@ -21,7 +21,7 @@ public class MySerializer<T>
         foreach (var property in properties)
         {
             string propertyName = property.Name;
-            object value = property.GetValue(obj);
+            object? value = property.GetValue(obj);
             sb.AppendLine($"{propertyName} : {value}");
         }
 
@@ -30,6 +30,17 @@ public class MySerializer<T>
 
     public string Serialize()
     {
-        return SerializeObject(obj);
+        StringBuilder sb = new StringBuilder();
+        PropertyInfo[] properties = typeof(T).GetProperties();
+
+        foreach (var property in properties)
+        {
+            MyPropertyInfoAttribute attribute = (MyPropertyInfoAttribute)Attribute.GetCustomAttribute(property, typeof(MyPropertyInfoAttribute));
+            string propertyName = attribute != null ? attribute.SerializationName : property.Name;
+            object value = property.GetValue(_obj);
+            sb.AppendLine($"{propertyName}: {value}");
+        }
+
+        return sb.ToString();
     }
 }
